@@ -1,13 +1,9 @@
-make all:
-    g++ hangman_client.c hangman_client
-    g++ hangman_server.c hangman_server
+all: client server
 
-make clean:
-    rm hangman_client
-    rm hangman_server
+client: hangman_client.c
+	gcc -o hangman_client hangman_client.c
 
-make client:
-	g++ hangman_client.c hangman_client
+server: hangman_server.c
+	gcc -o hangman_server hangman_server.c
 
-make server:
-	g++ hangman_server.c hangman_server
+clean: ; rm hangman_client ; hangman_server
