@@ -6,4 +6,4 @@ client: hangman_client.c
 server: hangman_server.c
 	gcc -o hangman_server hangman_server.c
 
-clean: ; rm hangman_client ; hangman_server
+clean: ; rm hangman_client ; rm hangman_server
