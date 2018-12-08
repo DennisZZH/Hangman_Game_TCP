@@ -40,19 +40,27 @@ void startGame(){
 
     while(isOverTrue == 0){
 
-        bzero(clientMessage, strlen(clientMessage));
+        bzero(clientMessage, sizeof(clientMessage));
+
+        printf("Inside startGame; receiving user guess\n");
         n = recv(newsockfd, clientMessage, 2, 0);
         if (n < 0) 
              error("ERROR reading from socket");
 
         userGuess = clientMessage[1];
+        printf("userGuess is ");
+        printf("%c\n", userGuess);
+
         charSuccessCount = 0;
-        for(int i = 0; i < strlen(gameWord); i++){
+        for(int i = 0; i < sizeof(gameWord); i++){
             if(userGuess == gameWord[i]){
                 currentWord[i] = gameWord[i];
                 charSuccessCount++;
             }
         }
+
+        printf("charSuccessCount is ");
+        printf("%d\n", charSuccessCount);
 
         if(charSuccessCount == 0){
             WrongGuess[failureCount] = userGuess;                
@@ -61,36 +69,46 @@ void startGame(){
             successCount++;
         }
 
-        bzero(serverMessage, strlen(clientMessage));
+        bzero(serverMessage, sizeof(clientMessage));
 
-        if(successCount == strlen(gameWord)){
+        if(successCount == sizeof(gameWord)){
+            printf("in success case\n");
             isOverTrue = 1;
             serverMessage[0] = '8';
-            for(int i = 0; i < strlen(Win); i++){
+            for(int i = 0; i < sizeof(Win); i++){
                 serverMessage[i+1] = Win[i];
             }
             
         }else if(failureCount >= 6){
+            printf("in failure case\n");
             isOverTrue = 1;
             serverMessage[0] = '9';
-            for(int i = 0; i < strlen(Lose); i++){
+            for(int i = 0; i < sizeof(Lose); i++){
                 serverMessage[i+1] = Lose[i];
             } 
 
         }else{
+            printf("in keep playingh case\n");
             
             serverMessage[0] = '0';
-            serverMessage[1] = strlen(gameWord) + '0';
+            printf("%c\n",serverMessage[0]);
+
+            serverMessage[1] = sizeof(gameWord) + '0';
+            printf("%c\n",serverMessage[1]);
+
             serverMessage[2] = failureCount + '0';
-            for(int i = 0; i < strlen(currentWord); i++){
+            printf("%c\n",serverMessage[2]);
+
+            for(int i = 0; i < sizeof(currentWord); i++){
                 serverMessage[i+3] = currentWord[i];
             }
-            for(int j = 0; j < strlen(WrongGuess); j++){
-                serverMessage[j+3+strlen(currentWord)] = WrongGuess[j];
+            for(int j = 0; j < sizeof(WrongGuess); j++){
+                serverMessage[j+3+sizeof(currentWord)] = WrongGuess[j];
             }
         }
 
-        send(newsockfd, serverMessage, strlen(serverMessage),0);           
+        printf("sending server message\n");
+        send(newsockfd, serverMessage, sizeof(serverMessage),0);           
     }
 }
 
@@ -139,12 +157,12 @@ int main(int argc, char *argv[])
             serverMessage[2] = failureCount + '0';
             printf("%c\n",serverMessage[2]);
 
-            for(int i = 0; i < strlen(currentWord); i++){
+            for(int i = 0; i < sizeof(currentWord); i++){
                 serverMessage[i+3] = currentWord[i];
             }
             
             printf("server sending first message\n");
-            send(newsockfd, serverMessage, strlen(serverMessage),0);
+            send(newsockfd, serverMessage, sizeof(serverMessage),0);
             
             printf("starting game\n");
             startGame();
