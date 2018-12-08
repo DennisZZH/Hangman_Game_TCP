@@ -20,7 +20,10 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
-    char buffer[256];
+    char rcv_msg[256];
+    char msg[256];
+    char Choice[3];
+    char Guess[256];
     if (argc < 3) {
        fprintf(stderr,"usage %s hostname port\n", argv[0]);
        exit(0);
@@ -38,19 +41,84 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_family = AF_INET;
     bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
     serv_addr.sin_port = htons(portno);
-    // if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
-    //     error("ERROR connecting");
+    if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
+        error("ERROR connecting");
+
     printf("Ready to start game? (y/n): ");
-    bzero(buffer, 256);
-    fgets(buffer, 255, stdin);
-    n = write(sockfd, buffer, strlen(buffer));
+    fgets(Choice, 3, stdin);
+    if (Choice[0] == 'n') {printf("You choose n. Terminate the client.\n"); close(sockfd); return 0;}
+
+    bzero(msg, 256);
+	msg[0] = '0';
+	n = write(sockfd, msg, strlen(msg));    //send 0 to server
     if (n < 0) 
          error("ERROR writing to socket");
-    bzero(buffer, 256);
-    n = read(sockfd, buffer, 255);
+    
+    bzero(rcv_msg, 256);
+    n = read(sockfd, rcv_msg, 255);  //read from server
     if (n < 0) 
          error("ERROR reading from socket");
-    printf("%s\n", buffer);
+
+    int WordLength = rcv_msg[1] - '0';   //print the Word (first with _______)
+    for (int i = 0; i < WordLength; i++) {
+        printf("%c", rcv_msg[i+3]);
+    }
+
+    int NumIncorrect = rcv_msg[2] - '0'; //print the incorrect guesses if there are
+    if (NumIncorrect != 0) {
+        printf("Incorrect Guesses: ");
+        printf("%c", rcv_msg[WordLength+3]);
+        for (int i = 1; i < NumIncorrect; i++) {
+            printf(" ,%c", rcv_msg[i+WordLength+3]);
+        }
+        printf("\n");
+    }
+
+    int End = 0;
+    while (1 - End) {
+        printf("Letter to guess: ");
+		bzero(Guess, 256);
+		fgets(Guess, 255, stdin);
+		int GuessLetter = tolower(Guess[0]);
+		while(strlen(Guess)!=2 || GuessLetter < 97 || GuessLetter > 122) {
+			printf("Error! Please guess one letter.\n");
+			printf("letter to guess: ");
+			bzero(Guess, 256);
+			fgets(Guess, 255, stdin);
+			GuessLetter = tolower(Guess[0]);
+		}
+        
+		bzero(msg, 256);
+		msg[0] = '1';
+		msg[1] = Guess[0];
+		n = write(sockfd, msg, strlen(msg));    //send the guess to server
+		bzero(rcv_msg, 256);
+		n = read(sockfd, rcv_msg, 255); //read the reply
+
+        if(rcv_msg[0] != '0') { //if Msg flag is not 0
+            int WordLength = rcv_msg[0] - '0';   //print the final message to end the game
+            for (int i = 0; i < WordLength; i++) {
+                printf("%c", rcv_msg[i+1]);
+            }
+			End = 1;
+		}
+		else {
+            int WordLength = rcv_msg[1] - '0';   //print the Word (first with _______)
+            for (int i = 0; i < WordLength; i++) {
+                printf("%c", rcv_msg[i+3]);
+            }
+
+            int NumIncorrect = rcv_msg[2] - '0'; //print the incorrect guesses if there are
+            if (NumIncorrect != 0) {
+                printf("Incorrect Guesses: ");
+                printf("%c", rcv_msg[WordLength+3]);
+                for (int i = 1; i < NumIncorrect; i++) {
+                    printf(" ,%c", rcv_msg[i+WordLength+3]);
+                }
+                printf("\n");
+            }
+		}
+	}
     close(sockfd);
     return 0;
 }
