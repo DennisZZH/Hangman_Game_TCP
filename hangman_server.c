@@ -76,7 +76,7 @@ void startGame(){
             for(int i = 0; i < strlen(Lose); i++){
                 serverMessage[i+1] = Lose[i];
             } 
-                
+
         }else{
             
             serverMessage[0] = '0';
@@ -122,17 +122,29 @@ int main(int argc, char *argv[])
             error("ERROR on accept");
 
         n = recv(newsockfd,clientMessage,2,0);
+        printf("received initial consent from client\n");
+
         if (n < 0) 
             error("ERROR reading from socket");
         else if(n == 0){                    // the first empty message received, game starts now
         
+            printf("server sending first message\n");
+
             serverMessage[0] = '0';
+            printf("%c",serverMessage[0]);
+
             serverMessage[1] = strlen(gameWord) + '0';
+            printf("%c",serverMessage[1]);
+
             serverMessage[2] = failureCount + '0';
+            printf("%c",serverMessage[2]);
+
             for(int i = 0; i < strlen(currentWord); i++){
                 serverMessage[i+3] = currentWord[i];
             }
+            
             send(newsockfd, serverMessage, strlen(serverMessage),0);
+            
             startGame();
         }
         close(newsockfd);
