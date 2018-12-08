@@ -17,20 +17,81 @@ struct sockaddr_in serv_addr, cli_addr;
 char clientMessage[2];                 // buffer sused to receive user message
 char serverMessage[1024];
 
-char[6] gameWord = "dennis";		// hardcoded game word
-char[6] currentWord = "______";
-char[6] WrongGuess = "";
+char gameWord[6] = "dennis";		// hardcoded game word
+char currentWord[6] = "______";
+char WrongGuess[6] = "";
 int failureCount = 0;
 int successCount = 0;
-bool isOverTrue= false;
+int isOverTrue= 0;
 
 int charSuccessCount;
 char userGuess;
+
+char Win[8] = "You Win!";
+char Lose[9] = "You Lost!";
 
 void error(const char *msg)
 {
     perror(msg);
     exit(1);
+}
+
+void startGame(){
+
+    while(isOverTrue == 0){
+
+        bzero(clientMessage, strlen(clientMessage));
+        n = recv(newsockfd, clientMessage, 2, 0);
+        if (n < 0) 
+             error("ERROR reading from socket");
+
+        userGuess = clientMessage[1];
+        charSuccessCount = 0;
+        for(int i = 0; i < strlen(gameWord); i++){
+            if(userGuess == gameWord[i]){
+                currentWord[i] = gameWord[i];
+                charSuccessCount++;
+            }
+        }
+
+        if(charSuccessCount == 0){
+            WrongGuess[failureCount] = userGuess;                
+            failureCount++;
+        }else{
+            successCount++;
+        }
+
+        bzero(serverMessage, strlen(clientMessage));
+
+        if(successCount == strlen(gameWord)){
+            isOverTrue = 1;
+            serverMessage[0] = '8';
+            for(int i = 0; i < strlen(Win); i++){
+                serverMessage[i+1] = Win[i];
+            }
+            
+        }else if(failureCount >= 6){
+            isOverTrue = 1;
+            serverMessage[0] = '9';
+            for(int i = 0; i < strlen(Lose); i++){
+                serverMessage[i+1] = Lose[i];
+            } 
+                
+        }else{
+            
+            serverMessage[0] = '0';
+            serverMessage[1] = strlen(gameWord) + '0';
+            serverMessage[2] = failureCount + '0';
+            for(int i = 0; i < strlen(currentWord); i++){
+                serverMessage[i+3] = currentWord[i];
+            }
+            for(int j = 0; j < strlen(WrongGuess); j++){
+                serverMessage[j+3+strlen(currentWord)] = WrongGuess[j];
+            }
+        }
+
+        send(newsockfd, serverMessage, strlen(serverMessage),0);           
+    }
 }
 
 int main(int argc, char *argv[])
@@ -71,8 +132,7 @@ int main(int argc, char *argv[])
             for(int i = 0; i < strlen(currentWord); i++){
                 serverMessage[i+3] = currentWord[i];
             }
-            send(newsockfd, serverMessage, messageLength,0);
-            
+            send(newsockfd, serverMessage, strlen(serverMessage),0);
             startGame();
         }
         close(newsockfd);
@@ -82,58 +142,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void startGame(){
-
-    while(isOverTrue == false){
-
-        bzero(clientMessage);
-        n = recv(newsockfd, clientMessage, 2, 0);
-        if (n < 0) 
-             error("ERROR reading from socket");
-
-        userGuess = clientMessage[1];
-        charSuccessCount = 0;
-        for(int i = 0; i < strlen(gameWord); i++){
-            if(userGuess == gameWord[i]){
-                currentWord[i] = gameWord[i];
-                charSuccessCount++;
-            }
-        }
-
-        if(charSuccessCount == 0){
-            WrongGuess[failureCount] = userGuess;                
-            failureCount++;
-        }else{
-            successCount++;
-        }
-
-        bzero(serverMessage);
-
-        if(successCount == strlen(gameWord)){
-            isOverTrue = true;
-            serverMessage[0] = '8';
-            serverMessage += "You Win!";
-            
-        }else if(failureCount >= 6){
-            isOverTrue = true;
-            serverMessage[0] = '9';
-            serverMessage += "You Lost!";      
-        }else{
-            
-            serverMessage[0] = '0';
-            serverMessage[1] = strlen(gameWord) + '0';
-            serverMessage[2] = failureCount + '0';
-            for(int i = 0; i < strlen(currentWord); i++){
-                serverMessage[i+3] = currentWord[i];
-            }
-            for(int j = 0; j < strlen(WrongGuess); j++){
-                serverMessage[j+3+strlen(currentWord)] = WrongGuess[j];
-            }
-        }
-
-        send(newsockfd, serverMessage, strlen(serverMessage),0);           
-    }
-}
 
 
         
