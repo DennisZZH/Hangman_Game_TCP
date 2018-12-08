@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     }
 
     int WordLength = rcv_msg[1] - '0';   //print the Word (first with _______)
-    printf("%d", WordLength);   //test
+    //printf("%d", WordLength);   //test
     for (int i = 0; i < WordLength; i++) {
         printf("%c", rcv_msg[i+3]);
     }
@@ -110,11 +110,12 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < WordLength; i++) {
                 printf("%c", rcv_msg[i+1]);
             }
+            printf("\n");
 			End = 1;
 		}
 		else {
             int WordLength = rcv_msg[1] - '0';   //print the Word (first with _______)
-            printf("%d", WordLength);   //test
+            //printf("%d", WordLength);   //test
             for (int i = 0; i < WordLength; i++) {
                 printf("%c", rcv_msg[i+3]);
             }
@@ -125,7 +126,7 @@ int main(int argc, char *argv[]) {
             if (NumIncorrect != 0) {
                 printf("%c", rcv_msg[WordLength+3]);
                 for (int i = 1; i < NumIncorrect; i++) {
-                    printf(" ,%c", rcv_msg[i+WordLength+3]);
+                    printf(", %c", rcv_msg[i+WordLength+3]);
                 }
             }
             printf("\n\n");
