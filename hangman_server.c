@@ -126,25 +126,27 @@ int main(int argc, char *argv[])
 
         if (n < 0) 
             error("ERROR reading from socket");
-        else if(n == 0){                    // the first empty message received, game starts now
+        else if(n == 1){                    // the first empty message received, game starts now
         
-            printf("server sending first message\n");
+            printf("server preparing first message\n");
 
             serverMessage[0] = '0';
-            printf("%c",serverMessage[0]);
+            printf("%c\n",serverMessage[0]);
 
-            serverMessage[1] = strlen(gameWord) + '0';
-            printf("%c",serverMessage[1]);
+            serverMessage[1] = sizeof(gameWord) + '0';
+            printf("%c\n",serverMessage[1]);
 
             serverMessage[2] = failureCount + '0';
-            printf("%c",serverMessage[2]);
+            printf("%c\n",serverMessage[2]);
 
             for(int i = 0; i < strlen(currentWord); i++){
                 serverMessage[i+3] = currentWord[i];
             }
             
+            printf("server sending first message\n");
             send(newsockfd, serverMessage, strlen(serverMessage),0);
             
+            printf("starting game\n");
             startGame();
         }
         close(newsockfd);
