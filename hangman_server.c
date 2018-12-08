@@ -1,17 +1,18 @@
-//Author: Zihao Zhang
+//Author: Zihao Zhang & Jiajun Wan
 //Date: 12.7
-#include <sys/types.h> 
+
+#include <sys/types.h>
 #include<unistd.h>
-  #include<stdio.h>
-  #include<stdlib.h>
-  #include<sys/ioctl.h>
-  #include<sys/poll.h>
-  #include<sys/socket.h>
-  #include<sys/time.h>
-  #include<netinet/in.h>
-  #include<errno.h>
-  #include<string.h>
-  #include<time.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/ioctl.h>
+#include<sys/poll.h>
+#include<sys/socket.h>
+#include<sys/time.h>
+#include<netinet/in.h>
+#include<errno.h>
+#include<string.h>
+#include<time.h>
 
 int sockfd, newsockfd, portno;
 int n;
